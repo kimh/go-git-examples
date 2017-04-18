@@ -7,12 +7,12 @@ import (
 	"os"
 
 	"golang.org/x/crypto/ssh"
+	"gopkg.in/src-d/go-git.v4"
+	. "gopkg.in/src-d/go-git.v4/_examples"
+	"gopkg.in/src-d/go-git.v4/config"
+	"gopkg.in/src-d/go-git.v4/plumbing"
+	gitssh "gopkg.in/src-d/go-git.v4/plumbing/transport/ssh"
 	"io/ioutil"
-	"srcd.works/go-git.v4"
-	//"srcd.works/go-git.v4/config"
-	. "srcd.works/go-git.v4/examples"
-	"srcd.works/go-git.v4/plumbing"
-	gitssh "srcd.works/go-git.v4/plumbing/transport/ssh"
 )
 
 // Basic example of how to clone a repository using clone options.
@@ -64,14 +64,19 @@ func main() {
 	fmt.Println("doing fetching")
 	err = r.Fetch(&git.FetchOptions{
 		Progress: os.Stdout,
+		RefSpecs: []config.RefSpec{
+			config.RefSpec("+refs/pull/*/head:refs/remotes/origin/pr/*"),
+		},
 	})
 
-	if err.Error() != "already up-to-date" {
-		CheckIfError(err)
-	}
+	//if err.Error() != "already up-to-date" {
+	//	CheckIfError(err)
+	//}
 
 	// ... retrieving the branch being pointed by HEAD
-	ref, err := r.Reference(branchRef, false)
+	ref, err := r.Reference("refs/remotes/origin/pr/62", false)
+
+	fmt.Println(ref)
 
 	CheckIfError(err)
 
@@ -81,7 +86,7 @@ func main() {
 	CheckIfError(err)
 
 	/// ... retrieving the commit object
-	commit, err := r.Commit(ref.Hash())
+	commit, err := r.CommitObject(ref.Hash())
 	CheckIfError(err)
 	fmt.Println(commit)
 }
