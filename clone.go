@@ -61,6 +61,8 @@ func main() {
 
 	CheckIfError(err)
 
+	fmt.Println(r)
+
 	fmt.Println("doing fetching")
 	err = r.Fetch(&git.FetchOptions{
 		Progress: os.Stdout,
@@ -69,26 +71,20 @@ func main() {
 		},
 	})
 
-	//if err.Error() != "already up-to-date" {
-	//	CheckIfError(err)
-	//}
+	CheckIfError(err)
 
 	// ... retrieving the branch being pointed by HEAD
-	ref, err := r.Reference("refs/remotes/origin/pr/62", false)
-
-	fmt.Println(ref)
-
-	CheckIfError(err)
+	ref, err := r.Reference("refs/remotes/origin/pr/63", false)
 
 	w, err := r.Worktree()
 	CheckIfError(err)
 	err = w.Checkout(ref.Hash())
 	CheckIfError(err)
 
-	/// ... retrieving the commit object
-	commit, err := r.CommitObject(ref.Hash())
-	CheckIfError(err)
-	fmt.Println(commit)
+	///// ... retrieving the commit object
+	//commit, err := r.CommitObject(ref.Hash())
+	//CheckIfError(err)
+	//fmt.Println(commit)
 }
 
 //git clone $CIRCLE_REPOSITORY_URL .
