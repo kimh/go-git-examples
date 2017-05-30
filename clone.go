@@ -59,7 +59,9 @@ func main() {
 
 	CheckIfError(err)
 
-	fmt.Println("doing fetching")
+	// Fetch Example
+	// ------------------------------
+	fmt.Println("doing fetch...")
 	err = r.Fetch(&git.FetchOptions{
 		Progress: os.Stdout,
 		RefSpecs: []config.RefSpec{
@@ -70,16 +72,32 @@ func main() {
 			Signer: signer,
 		},
 	})
+	if err != nil && err.Error() != "already up-to-date" {
+		CheckIfError(err)
+	}
 
-	CheckIfError(err)
-
-	// ... retrieving the branch being pointed by HEAD
-	ref, err := r.Reference(plumbing.ReferenceName(fmt.Sprintf("refs/heads/%s", branch)), false)
-
+	// Checkout Example
+	// ------------------------------
+	fmt.Println("doing checkout...")
+	// branch doesn't probably exist in refs/heads. So I need to check remotes refs
+	// in this example, we checkout 20170530094317 branch
+	ref, err := r.Reference(plumbing.ReferenceName(fmt.Sprintf("refs/remotes/origin/%s", "20170530094317")), false)
+	fmt.Println(ref)
 	w, err := r.Worktree()
 	CheckIfError(err)
 	err = w.Checkout(&git.CheckoutOptions{
 		Hash: ref.Hash(),
+	})
+	CheckIfError(err)
+
+	// Reset Example
+	// ------------------------------
+	fmt.Println("doing reset...")
+	// we move HEAD to 382aca0d2dbc8320562fe067b5bf9bfd8a7df598 as an example
+	commit := plumbing.NewHash("382aca0d2dbc8320562fe067b5bf9bfd8a7df598")
+	err = w.Reset(&git.ResetOptions{
+		Mode:   git.HardReset,
+		Commit: commit,
 	})
 	CheckIfError(err)
 }
