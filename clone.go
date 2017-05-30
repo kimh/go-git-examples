@@ -38,8 +38,6 @@ func main() {
 	signer, err := ssh.ParsePrivateKey(buffer)
 	CheckIfError(err)
 
-	fmt.Println(fmt.Sprintf("refs/heads/%s", branch))
-
 	var r *git.Repository
 
 	_, err = os.Stat(directory)
@@ -61,34 +59,27 @@ func main() {
 
 	CheckIfError(err)
 
-	fmt.Println(r)
-
 	fmt.Println("doing fetching")
 	err = r.Fetch(&git.FetchOptions{
 		Progress: os.Stdout,
 		RefSpecs: []config.RefSpec{
 			config.RefSpec("+refs/pull/*/head:refs/remotes/origin/pr/*"),
 		},
+		Auth: &gitssh.PublicKeys{
+			User:   "git",
+			Signer: signer,
+		},
 	})
 
 	CheckIfError(err)
 
 	// ... retrieving the branch being pointed by HEAD
-	ref, err := r.Reference("refs/remotes/origin/pr/63", false)
+	ref, err := r.Reference(plumbing.ReferenceName(fmt.Sprintf("refs/heads/%s", branch)), false)
 
 	w, err := r.Worktree()
 	CheckIfError(err)
-	err = w.Checkout(ref.Hash())
+	err = w.Checkout(&git.CheckoutOptions{
+		Hash: ref.Hash(),
+	})
 	CheckIfError(err)
-
-	///// ... retrieving the commit object
-	//commit, err := r.CommitObject(ref.Hash())
-	//CheckIfError(err)
-	//fmt.Println(commit)
 }
-
-//git clone $CIRCLE_REPOSITORY_URL .
-//git fetch --force origin 20170310120922:remotes/origin/20170310120922
-//git reset --hard $CIRCLE_SHA1
-//git checkout -q -B $CIRCLE_BRANCH
-//git reset --hard $CIRCLE_SHA1
